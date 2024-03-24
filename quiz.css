@@ -3,6 +3,7 @@
     height: 24.7vw;
     margin-left: 30vw;
     margin-right: 30vw;
+    border: 1px solid black;
 }
 
 .controls {
@@ -14,4 +15,5 @@
     visibility: hidden;
     display: none;
 }
+
 

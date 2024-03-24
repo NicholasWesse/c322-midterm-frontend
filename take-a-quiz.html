@@ -1,11 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="make-a-quiz.css" />
+    <link rel="stylesheet" href="navbar.css" />
+    <link rel="stylesheet" href="general.css" />
+    <link rel="stylesheet" href="cards.css" />
+    <link rel="stylesheet" href="quiz.css" />
+  </head>
+  <body>
+    <div id="all">
+      <ul class="topnav">
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="add-question.html">Add questions</a></li>
+        <li><a href="make-a-quiz.html">Create a quiz</a></li>
+        <li><a href="take-a-quiz.html">Take a quiz</a></li>
+        <li class="right"><a href="#about">About</a></li>
+      </ul>
+
+      <h1>Choose Are All Available Quizzes. Click One to Begin</h1>
+      <div id="list" class="card"></div>
+    </div>
+  </body>
+
+  <script>
+    //Create View to choose Quizes, Take Quizes and a fake completion screen
+    //
+    ///
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+
+    let host = "https://midterm-latest-nicholaswesse.onrender.com";
+    let quizzes = [];
+    let selectedQuiz = [];
+    let currentQuestion = 0;
+
+    displayTheQuizes();
+
+    async function getAll() {
+      let response = await fetch(host + "/quizzes");
+      let result = await response.json();
+      return result;
+    }
+
+    async function getQuiz(id) {
+      let response = await fetch(host + `/quizzes/${id}`);
+      let result = await response.json();
+      return result;
+    }
+
+    async function displayTheQuizes() {
+      if (quizzes.length == 0) {
+        quizzes = await getAll();
+      }
+      console.log(quizzes);
+
+      let list = document.getElementById("list");
+      list.innerHTML = "";
+      console.log(quizzes);
+
+      for (let quiz of quizzes) {
+        let div = document.createElement("div");
+        div.className = "quiz";
+        let innerHtml = `
+          <button onClick="startQuiz(${quiz.id})">
+        <div class="card" id= ${quiz.id}>
+          <h4><b>${quiz.id}</b></h4>
+          <p>${quiz.title}</p>
+          <p>(${quiz.questionIds.length} Questions)</p>
+        </div>
+      </button>
+
+            `;
+        div.innerHTML = innerHtml;
+        list.appendChild(div);
+      }
+    }
+
+    async function startQuiz(id) {
+      let response = await fetch(host + `/quizzes/${id}`);
+      let result = await response.json();
+      selectedQuiz = result;
+      currentQuestion = 0;
+      console.log(selectedQuiz);
+
+      takeQuiz(id, selectedQuiz.questions.length);
+    }
+
+    async function takeQuiz(id, maxSize) {
+      console.log(currentQuestion);
+      if (currentQuestion == 0) {
+        let response = await fetch(host + `/quizzes/${id}`);
+        let quiz = await response.json();
+
+        let html = document.getElementById("all");
+        let curQuestion = quiz.questions[currentQuestion];
+
+        html.innerHTML = `
+      <div id="card2">
+        <img src="https://midterm-latest-nicholaswesse.onrender.com/questions/${
+          curQuestion.id
+        }/image" alt="question" style="width:100%">
+          <h4><b>${curQuestion.id}</b></\h4>
+          <p>${curQuestion.description}</p>
+          <form>
+              <input type="radio" id="q${
+                curQuestion.id
+              }ptionA" name="q2Answer" value="A">
+              <label for="q${curQuestion.id}ptionA">${
+          curQuestion.choices[0]
+        }</label><br>
+
+              <input type="radio" id="q${
+                curQuestion.id
+              }ptionB" name="q2Answer" value="B">
+              <label for="q${curQuestion.id}ptionB">${
+          curQuestion.choices[1]
+        }</label><br>
+
+              <input type="radio" id="q${
+                curQuestion.id
+              }ptionC" name="q2Answer" value="C">
+              <label for="q${curQuestion.id}ptionC">${
+          curQuestion.choices[2]
+        }</label><br>
+          </form>
+        </div>
+        <div id="botButtons">
+        <p></p>
+        <p> Question ${currentQuestion + 1}</p>
+        <button onClick="next(${id}, ${maxSize})"> Next </button>
+        </div>
+        `;
+      } else if (currentQuestion == maxSize) {
+        let html = document.getElementById("all");
+        html.innerHTML = `You completed The Quiz: Your Score is 3 : 4  `;
+      } else {
+        let response = await fetch(host + `/quizzes/${id}`);
+        let quiz = await response.json();
+        console.log(quiz);
+        console.log(currentQuestion);
+
+        let html = document.getElementById("all");
+        let curQuestion = quiz.questions[currentQuestion];
+        console.log(curQuestion);
+
+        html.innerHTML = `
+      <div id="card2">
+        <img src="https://midterm-latest-nicholaswesse.onrender.com/questions/${
+          curQuestion.id
+        }/image" alt="question" style="width:100%">
+          <h4><b>${curQuestion.id}</b></\h4>
+          <p>${curQuestion.description}</p>
+          <form>
+              <input type="radio" id="q${
+                curQuestion.id
+              }ptionA" name="q2Answer" value="A">
+              <label for="q${curQuestion.id}ptionA">${
+          curQuestion.choices[0]
+        }</label><br>
+
+              <input type="radio" id="q${
+                curQuestion.id
+              }ptionB" name="q2Answer" value="B">
+              <label for="q${curQuestion.id}ptionB">${
+          curQuestion.choices[1]
+        }</label><br>
+
+              <input type="radio" id="q${
+                curQuestion.id
+              }ptionC" name="q2Answer" value="C">
+              <label for="q${curQuestion.id}ptionC">${
+          curQuestion.choices[2]
+        }</label><br>
+          </form>
+        </div>
+        <div id="botButtons"
+        <button onClick="previous(${id}, ${maxSize})"> Previous </button>
+        <p> Question ${currentQuestion + 1}</p>
+        <button onClick="next(${id}, ${maxSize})"> Next </button>
+        </div>
+        `;
+      }
+    }
+
+    function next(id, maxSize) {
+      currentQuestion++;
+      takeQuiz(id, maxSize);
+    }
+    function previous(id, maxSize) {
+      currentQuestion--;
+      takeQuiz(id, maxSize);
+    }
+  </script>
 </html>

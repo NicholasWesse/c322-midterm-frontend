@@ -1,11 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="make-a-quiz.css" />
+    <link rel="stylesheet" href="navbar.css" />
+    <link rel="stylesheet" href="general.css" />
+    <link rel="stylesheet" href="cards.css" />
+  </head>
+  <body>
+    <ul class="topnav">
+      <li><a class="active" href="index.html">Home</a></li>
+      <li><a href="add-question.html">Add questions</a></li>
+      <li><a href="make-a-quiz.html">Create a quiz</a></li>
+      <li><a href="take-a-quiz.html">Take a quiz</a></li>
+      <li class="right"><a href="#about">About</a></li>
+    </ul>
+
+    <div id="questions">
+      <h1>Questions Bank</h1>
+      <h3>Click on a Question to Add It</h3>
+      <div id="list" class="cards"></div>
+    </div>
+    <div id="quiz">
+      <h2 id="questionTotal">The Quiz(0 Questions)</h2>
+
+      <form>
+        <label for="name">Quiz Title:</label><br />
+        <input type="text" id="name" name="name" /><br />
+      </form>
+      <div id="listBank"></div>
+      <button id="but" onClick="update()">Save Changes</button>
+      <br />
+      <button id="but" onClick="reset()">
+        Save Changes and Start New Quiz
+      </button>
+
+      <h2>Click Here To Remove Question</h2>
+    </div>
+
+    <script>
+      let host = "https://midterm-latest-nicholaswesse.onrender.com";
+      let questions = [];
+      let addedQuestions = [];
+      let totalSent = 0;
+      displayTheQuestions();
+
+      async function getAll() {
+        let response = await fetch(host + "/questions");
+        let result = await response.json();
+        return result;
+      }
+
+      async function getAllQuizzes() {
+        let response = await fetch(host + "/quizzes");
+        let result = await response.json();
+        console.log(result);
+        return result;
+      }
+
+      async function displayTheQuestions() {
+        if (questions.length == 0) {
+          questions = await getAll();
+        }
+
+        let list = document.getElementById("list");
+        list.innerHTML = "";
+
+        for (let question of questions) {
+          let div = document.createElement("div");
+          div.className = "card";
+          let innerHtml = `
+          
+          <button onClick="switchArrays(${question.id})">
+        <img src="https://midterm-latest-nicholaswesse.onrender.com/questions/${question.id}/image" alt="question" style="width:100%">
+        
+        <div class="container" id= ${question.id}>
+          <h4><b>${question.id}</b></h4> 
+          <p>${question.description}</p>
+          <form>
+              <input type="radio" id="q${question.id}ptionA" name="q2Answer" value="A">
+              <label for="q${question.id}ptionA">${question.choices[0]}</label><br>
+
+              <input type="radio" id="q${question.id}ptionB" name="q2Answer" value="B">
+              <label for="q${question.id}ptionB">${question.choices[1]}</label><br>
+
+              <input type="radio" id="q${question.id}ptionC" name="q2Answer" value="C">
+              <label for="q${question.id}ptionC">${question.choices[2]}</label><br>       
+          </form> 
+        </div>
+      </button>
+     
+            `;
+          div.innerHTML = innerHtml;
+          list.appendChild(div);
+        }
+      }
+
+      async function switchArrays(id) {
+        var holder = await questions.filter((question) => {
+          return question.id == id;
+        });
+
+        questions = await questions.filter((question) => {
+          return question.id != id;
+        });
+        addedQuestions.push(holder[0]);
+
+        await addQuestion();
+      }
+
+      async function addQuestion() {
+        //given question id we remove it from questions and add it to the newQuestions
+
+        let list = document.getElementById("listBank");
+        list.innerHTML = "";
+
+        document.getElementById(
+          "questionTotal"
+        ).innerHTML = `<h2>The Quiz (${addedQuestions.length} Questions</h2>`;
+
+        for (let question of addedQuestions) {
+          let div = document.createElement("div");
+          div.className = "card";
+          let innerHtml = `
+          
+          <button id= ${question.id} onClick="removeQuestion(${question.id})">
+        <img src="https://midterm-latest-nicholaswesse.onrender.com/questions/${question.id}/image" alt="question" style="width:100%">
+        
+        <div class="container">
+          <h4><b>${question.id}</b></\h4> 
+          <p>${question.description}</p>
+          <form>
+              <input type="radio" id="q${question.id}ptionA" name="q2Answer" value="A">
+              <label for="q${question.id}ptionA">${question.choices[0]}</label><br>
+
+              <input type="radio" id="q${question.id}ptionB" name="q2Answer" value="B">
+              <label for="q${question.id}ptionB">${question.choices[1]}</label><br>
+
+              <input type="radio" id="q${question.id}ptionC" name="q2Answer" value="C">
+              <label for="q${question.id}ptionC">${question.choices[2]}</label><br>       
+          </form> 
+        </div>
+      </button>
+     
+            `;
+          div.innerHTML = innerHtml;
+          list.appendChild(div);
+        }
+        displayTheQuestions();
+      }
+
+      function removeQuestion(id) {
+        var holder = addedQuestions.filter((question) => {
+          return question.id == id;
+        });
+
+        addedQuestions = addedQuestions.filter((question) => {
+          return question.id != id;
+        });
+
+        questions.push(holder[0]);
+
+        displayTheQuestions();
+        addQuestion();
+      }
+
+      async function update() {
+        var title = document.getElementById("name").value;
+        let questionIDs = [];
+
+        for (let hold of addedQuestions) {
+          questionIDs.push(hold.id);
+        }
+
+        let idholder = 0;
+        let quizz = await getAllQuizzes();
+
+        console.log(quizz);
+
+        if (totalSent == 0) {
+          for (let quizHolder of quizz) {
+            if (quizHolder.id > idholder) {
+              idholder = quizHolder.id;
+            }
+          }
+          idholder++;
+
+          let quiz = {
+            title: title,
+            questionIds: questionIDs,
+          };
+
+          ++totalSent;
+          let request = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(quiz),
+          };
+          let response = await fetch(host + "/quizzes", request);
+
+          if (response.status == 200) {
+            let id = await response.json();
+          }
+        } else {
+          let quiz = {
+            id: idholder,
+            quizTitle: title,
+            questionIDs: questionIDs,
+          };
+
+          let request = {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(quiz),
+          };
+          let response = await fetch(host + `/quizzes/${idholder}`, request);
+          if (response.status == 200) {
+            let id = await response.json();
+          } else {
+            console.log(response);
+            message = "Something went wrong! Quiz data could not be saved.";
+          }
+          alert(message);
+          location.href = "make-a-quiz.html";
+        }
+      }
+
+      async function reset() {
+        await update();
+        questions = await getAll();
+        addedQuestions = [];
+        totalSent = 0;
+
+        displayTheQuestions();
+        addQuestion();
+      }
+      //Make posting method and save method
+    </script>
+  </body>
 </html>
